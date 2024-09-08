@@ -1,6 +1,8 @@
+import { KAABA_COORDINATES } from './constants';
+
 export const calculateQiblaAngle = (latitude, longitude, declination) => {
-    const MECCA_LAT = 21.4225; // Kâbe'nin enlemi
-    const MECCA_LNG = 39.8262; // Kâbe'nin boylamı
+    const { latitude: MECCA_LAT, longitude: MECCA_LNG } = KAABA_COORDINATES;
+
   
     // Enlem ve boylamı radiana çevir
     const latRad = (latitude * Math.PI) / 180;

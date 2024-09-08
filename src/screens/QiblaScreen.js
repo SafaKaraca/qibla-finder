@@ -3,22 +3,28 @@ import { View, Text, StyleSheet, Image } from 'react-native';
 import { Magnetometer } from 'expo-sensors';
 import useLocation from '../hooks/useLocation';
 import { calculateQiblaAngle } from '../utils/calculateQiblaAngle';
-import { getMagneticDeclination } from '../utils/getMagneticDeclination'; 
+import { getMagneticDeclination } from '../utils/getMagneticDeclination';
+import { calculateDistance } from '../utils/calculateDistance';
+import { KAABA_COORDINATES } from '../utils/constants'; // Kabe koordinatlarını içe aktar
 
 const QiblaScreen = () => {
   const [heading, setHeading] = useState(0);
   const { location, errorMsg } = useLocation();
   const [qiblaAngle, setQiblaAngle] = useState(null);
   const [declination, setDeclination] = useState(0);
+  const [distanceToKaaba, setDistanceToKaaba] = useState(null);
 
   useEffect(() => {
     if (location) {
       const { latitude, longitude } = location;
-      // Manyetik sapmayı al
       getMagneticDeclination(latitude, longitude).then((declination) => {
         setDeclination(declination);
         const angle = calculateQiblaAngle(latitude, longitude, declination);
         setQiblaAngle(angle);
+
+        // Mesafeyi hesapla ve durumu güncelle
+        const distance = calculateDistance(latitude, longitude, KAABA_COORDINATES.latitude, KAABA_COORDINATES.longitude);
+        setDistanceToKaaba(distance);
       });
     }
   }, [location]);
@@ -44,7 +50,15 @@ const QiblaScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.directionText}>Kıble bu yönde</Text>
+      <View style={styles.directionContainer}>
+        <Text style={styles.directionText}>Kıble Bu Yönde</Text>
+        {qiblaAngle !== null && (
+          <Image
+            source={require('../../assets/red_arrow.png')}
+            style={[styles.smallArrow, { transform: [{ rotate: `${qiblaAngle - heading}deg` }] }]}
+          />
+        )}
+      </View>
       <View style={styles.compassContainer}>
         {qiblaAngle !== null && (
           <Image
@@ -53,7 +67,9 @@ const QiblaScreen = () => {
           />
         )}
       </View>
-      <Text style={styles.headingText}>Cihaz Yönü: {heading}°</Text>
+      {distanceToKaaba !== null && (
+        <Text style={styles.distanceText}>Kabe'ye olan kuşbakışı uzaklığınız: <Text style={styles.boldText}>{distanceToKaaba.toFixed(2)} km</Text>
+        </Text>      )}
     </View>
   );
 };
@@ -65,10 +81,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#fff',
   },
+  directionContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   directionText: {
-    fontSize: 22,
+    fontSize: 35,
     fontWeight: 'bold',
-    marginVertical: 20,
   },
   compassContainer: {
     width: 250,
@@ -79,15 +98,24 @@ const styles = StyleSheet.create({
     borderRadius: 125,
     borderColor: '#ddd',
     backgroundColor: '#f9f9f9',
-    marginBottom: 20,
+    marginVertical: 100,
   },
   arrow: {
-    width: 120,
-    height: 120,
+    width: 350,
+    height: 350,
   },
-  headingText: {
-    fontSize: 18,
-    marginTop: 10,
+  smallArrow: {
+    width: 22,
+    height: 22,
+    tintColor: '#086d3d',
+    marginLeft: 10,
+  },
+  distanceText: {
+    fontSize: 25,
+    textAlign: true,
+  },
+  boldText: {
+    fontWeight: 'bold',
   },
 });
 
