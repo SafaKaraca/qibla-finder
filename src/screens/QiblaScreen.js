@@ -53,16 +53,17 @@ const QiblaScreen = ({ route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     alignItems: 'center',
     backgroundColor: '#fff',
   },
   directionContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginVertical: 50
   },
   directionText: {
-    fontSize: 35,
+    fontSize: 30,
     fontWeight: 'bold',
   },
   compassContainer: {
@@ -74,7 +75,8 @@ const styles = StyleSheet.create({
     borderRadius: 125,
     borderColor: '#ddd',
     backgroundColor: '#f9f9f9',
-    marginVertical: 100,
+    marginTop: 50,
+    marginBottom: 100,
   },
   arrow: {
     width: 350,
