@@ -1,33 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Image } from 'react-native';
 import { Magnetometer } from 'expo-sensors';
-import useLocation from '../hooks/useLocation';
-import { calculateQiblaAngle } from '../utils/calculateQiblaAngle';
-import { getMagneticDeclination } from '../utils/getMagneticDeclination';
-import { calculateDistance } from '../utils/calculateDistance';
-import { KAABA_COORDINATES } from '../utils/constants'; // Kabe koordinatlarını içe aktar
 
-const QiblaScreen = () => {
+const QiblaScreen = ({ route }) => {
+  // route veya params null olabilir, güvenli kontrol yapıyoruz
+  const { qiblaAngle = 0, distanceToKaaba = 0 } = route.params || {}; // Varsayılan değerler verdik
   const [heading, setHeading] = useState(0);
-  const { location, errorMsg } = useLocation();
-  const [qiblaAngle, setQiblaAngle] = useState(null);
-  const [declination, setDeclination] = useState(0);
-  const [distanceToKaaba, setDistanceToKaaba] = useState(null);
-
-  useEffect(() => {
-    if (location) {
-      const { latitude, longitude } = location;
-      getMagneticDeclination(latitude, longitude).then((declination) => {
-        setDeclination(declination);
-        const angle = calculateQiblaAngle(latitude, longitude, declination);
-        setQiblaAngle(angle);
-
-        // Mesafeyi hesapla ve durumu güncelle
-        const distance = calculateDistance(latitude, longitude, KAABA_COORDINATES.latitude, KAABA_COORDINATES.longitude);
-        setDistanceToKaaba(distance);
-      });
-    }
-  }, [location]);
 
   useEffect(() => {
     const subscription = Magnetometer.addListener((data) => {
@@ -43,10 +21,6 @@ const QiblaScreen = () => {
       subscription.remove();
     };
   }, []);
-
-  if (errorMsg) {
-    return <Text>{errorMsg}</Text>;
-  }
 
   return (
     <View style={styles.container}>
@@ -68,8 +42,10 @@ const QiblaScreen = () => {
         )}
       </View>
       {distanceToKaaba !== null && (
-        <Text style={styles.distanceText}>Kabe'ye olan kuşbakışı uzaklığınız: <Text style={styles.boldText}>{distanceToKaaba.toFixed(2)} km</Text>
-        </Text>      )}
+        <Text style={styles.distanceText}>
+          Kabe'ye olan kuşbakışı uzaklığınız: <Text style={styles.boldText}>{distanceToKaaba.toFixed(2)} km</Text>
+        </Text>
+      )}
     </View>
   );
 };
@@ -112,7 +88,7 @@ const styles = StyleSheet.create({
   },
   distanceText: {
     fontSize: 25,
-    textAlign: true,
+    textAlign: 'center',
   },
   boldText: {
     fontWeight: 'bold',
